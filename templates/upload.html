@@ -1,0 +1,68 @@
+<html>
+<head>
+    <title>uploading_page</title>
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheetupload.css') }}">
+</head>
+<body>
+    <div id="ueberschrift">Firewall-Uploadpage</div>
+    
+    <div id="links">
+    <a href="{{ url_for('upload') }}" class="navel">Upload</a>
+    <a href="{{ url_for('index') }}" class="navel">Liste</a>
+    </div>
+    
+    
+    <!--Upload Button-->
+    <form method=post enctype=multipart/form-data>
+    <input id="file-upload" type="file" name="file"/>
+    <div class="container">
+        <button id="upbtn" type="button">
+        <p>Datei</p>
+        <div class="check-box">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+            <path fill="transparent" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+        </svg>
+        </div>
+        </button>
+    
+    
+    <!--Submit Button-->
+        <button id="btn" type="submit">
+            <p id="btnText">Submit</p>
+            <div class="check-box">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+                    <path fill="transparent" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+                </svg>
+            </div>
+        </button>
+    </div>
+    <p id="filename">
+    </p>
+    </form>
+    <!--js für button-->
+    <script type="text/javascript">
+        const upbtn = document.querySelector("#upbtn")
+
+        upbtn.onclick = () => {
+            document.getElementById("file-upload").click()
+        };
+        
+        
+        const btn = document.querySelector("#btn");
+        const btnText = document.querySelector("#btnText");
+
+        btn.onclick = () => {
+            btnText.innerHTML = "Thanks";
+            btn.classList.add("active");
+        };
+
+        function showname() {
+            var name = document.getElementById('file-upload');
+            document.getElementById("filename").innerHTML = name.files.item(0).name;
+        };
+
+        document.getElementById("file-upload").onchange = () => {showname()}
+    </script>
+</body>
+</html>
+    

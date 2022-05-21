@@ -1,13 +1,12 @@
-from flask import Flask, redirect, url_for, render_template, request, send_file
-#from flask_httpauth import HTTPBasicAuth
-from services.auth_service import do_auth
-from services.upload_service import create_output
+from flask import Flask, redirect, url_for, render_template, request, send_from_directory, flash, jsonify
+from flask_httpauth import HTTPBasicAuth
+from werkzeug.utils import secure_filename
 import os
-import io
+from db_stuff.db_actions import get_files, save_file, get_user
 
 
 app = Flask(__name__)
-#auth = HTTPBasicAuth()
+auth = HTTPBasicAuth()
 ALLOWED_EXTENSION = "xlsx"
 app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, "uploads")
 
@@ -22,57 +21,50 @@ app_data = {
 }
 
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() == ALLOWED_EXTENSION
-
-
 @app.route("/")
+@auth.login_required
 def start():
     return redirect(url_for("index"))
 
 
-#@auth.verify_password
+@auth.verify_password
 def verify_password(username, password):
-    return do_auth(username, password)
+    if get_user(username, password):
+        return username
 
 
-@app.route("/overview/combine")
-#@auth.login_required()
+@app.route("/overview")
+@auth.login_required
 def index():
-    return render_template("index.html", app_data=app_data)
+    return render_template("index.html", files=get_files())
 
 
-@app.route("/up", methods=["POST"])
+@app.route("/up", methods=["GET", "POST"])
 def upload():
-    if request.method == "POST":
-        files = [f for f in request.files.values() if f.filename != ""]
-        if len(files) < 1:
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(url_for("upload"))
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(url_for("upload"))
+        if file:
+            filename = secure_filename(file.filename)
+            save_file(filename, auth.current_user())
+            print(auth.current_user())
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return redirect(url_for("index"))
-
-        for file in files:
-            if not file or not allowed_file(file.filename):
-                return redirect(url_for("index"))
-
-        file_name = create_output(files, app.root_path)
-
-        return redirect(url_for("download_file", name=file_name))
+    # add_users()
+    return render_template("upload.html", app_data=app_data)
 
 
 @app.route("/download_file/<name>")
+@auth.login_required
 def download_file(name: str):
-    exel_data = io.BytesIO()
-    file_path = os.path.join(app.config["UPLOAD_FOLDER"], name)
 
-    with open(file_path, "rb") as data:
-        exel_data.write(data.read())
-        exel_data.seek(0)
-
-    os.remove(file_path)
-
-    return send_file(exel_data, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                     download_name='combined_reports.xlsx')
+    return send_from_directory(app.config["UPLOAD_FOLDER"], name)
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
