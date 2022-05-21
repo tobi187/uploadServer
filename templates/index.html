@@ -2,8 +2,10 @@
 <head>
 <title>firewall-liste</title>
 <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheet.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body>
+
 <div id="ueberschrift">Firewall-Liste</div>
     <div id="links">
     
@@ -18,7 +20,8 @@
           <div class="col col-2">File-Type</div>
           <div class="col col-3">Uploader</div>
           <div class="col col-4">Datum</div>
-            <div class="col col-5">Download</div>
+          <div class="col col-5">Download</div>
+          <div class="col col-6"></div>
         </li>
           
           {% for file in files %}
@@ -29,6 +32,11 @@
           <div class="col col-4" data-label="Payment Status">{{ file["date"] }}</div>
             <div class="col col-5">
                 <a href="{{ url_for('download_file', name=file['full_name']) }}">Download</a>
+            </div>
+            <div class="col col-6">
+                <a href="{{ url_for('delete_file', name=file['full_name']) }}">
+                    <i class="fa fa-trash-o" style="font-size:24px;color:red"></i>
+                </a>
             </div>
         </li>
           {% endfor %}

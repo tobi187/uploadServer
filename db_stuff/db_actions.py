@@ -25,12 +25,17 @@ def get_user(user_name, password):
         return False
 
 
+def del_file(name):
+    res = file_db.remove(Query().full_name == name)
+    return any(res)
+
+
 def get_files():
     return file_db.all()
 
 
 def add_users():
-    users = [User(name="simon", password="simon", id="1a"), User(name="tobi", password="tobi", id="1b")]
+    users = [User(name="justin", password="9_eWSuyna*9+ym7CMMZc-wV-_+7zEx", id="3"), User(name="justin_r", password="tobi", id="_5&m-QpHdxmE_=S^bJxw6@w97e*AtH")]
 
     for u in users:
         user_db.insert(u.to_json())
