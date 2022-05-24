@@ -152,3 +152,5 @@ cython_debug/
 .idea/
 
 hidden/
+db.json
+*/db.json
