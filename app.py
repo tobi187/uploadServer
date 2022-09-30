@@ -1,14 +1,19 @@
-from flask import Flask, redirect, url_for, render_template, request, send_from_directory, flash, send_file
+from flask import Flask, redirect, url_for, render_template, request, flash, send_file, make_response
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.utils import secure_filename
 import os
-from db_stuff.db_actions import get_files, save_file, get_user, del_file, add_users
+from db_stuff.db_actions import get_files, save_file, get_user, del_file
+# here is the berichtsheftstuff
+from servicesBHeft.edit_doc import fill_doc
+from servicesBHeft.email_sender import send_mail
 
 
 app = Flask(__name__)
 auth = HTTPBasicAuth()
 ALLOWED_EXTENSION = "xlsx"
 app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, "uploads")
+app.config["BASE_TEMPLATE"] = os.path.join(
+    app.root_path, "servicesBHeft", "Berichtsheft_Template.docx")
 
 
 app_data = {
@@ -40,6 +45,7 @@ def index():
 
 
 @app.route("/up", methods=["GET", "POST"])
+@auth.login_required
 def upload():
     if request.method == 'POST':
         if 'file' not in request.files:
@@ -73,6 +79,23 @@ def download_file(name: str):
     return send_file(
         os.path.join(app.config["UPLOAD_FOLDER"], name),
         as_attachment=True)
+
+
+# Here comes the Berichtsheft Controller
+@app.route("/api/v1/word", methods=["GET", "POST"])
+def create_word():
+    key_code = request.headers.get("ACCESS-KEY-CONTENT")
+
+    if key_code != os.getenv("WORD_KEY_CODE"):
+        return make_response("Ewwow", 401)
+
+    if request.method == "POST":
+        data = request.get_json()
+        word_doc = fill_doc(data, app.config["BASE_TEMPLATE"])
+        send_mail(data, word_doc)
+        return make_response("Success", 200)
+
+    return make_response("Hii", 201)
 
 
 if __name__ == '__main__':
