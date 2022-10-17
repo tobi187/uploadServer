@@ -8,6 +8,13 @@ def format_todos(todos):
     return "\n".join(["    -  " + line for line in lines])
 
 
+def holiday_check(school):
+    holiday = school.split("\n")[0]
+    if "ferien" in holiday.lower():
+        return "Ferien"
+    else:
+        return school
+
 def prepare_data(content):
     point = content["point"]
     if point:
@@ -21,7 +28,7 @@ def prepare_data(content):
         "kw": content["date"],
         "todo": format_todos(content["todos"]),
         "weekly": content["weekly_theme"],
-        "school": content["school"],
+        "school": holiday_check(content["school"]),
         "four": point
     }
 
